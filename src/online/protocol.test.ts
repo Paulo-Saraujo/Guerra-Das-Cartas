@@ -67,6 +67,7 @@ describe('validação de mensagens', () => {
   it('aceita mensagens corretas', () => {
     const game = createGame('black', seeded(2))
     expect(isMessage({ type: 'sync' })).toBe(true)
+    expect(isMessage({ type: 'rematch' })).toBe(true)
     expect(isMessage({ type: 'play', cardId: '7♠' })).toBe(true)
     expect(isMessage({ type: 'state', state: maskState(game, 'red') })).toBe(true)
     expect(isGameState(game)).toBe(true)

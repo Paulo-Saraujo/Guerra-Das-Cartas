@@ -135,6 +135,8 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
   const [fx, setFx] = useState<Fx | null>(null)
   const [showResult, setShowResult] = useState(false)
   const [disconnected, setDisconnected] = useState('')
+  const [rematchSent, setRematchSent] = useState(false) // convidado: já pedi revanche
+  const [rematchRequested, setRematchRequested] = useState(false) // anfitrião: o oponente pediu revanche
   const gameRef = useRef<GameState>(game) // sempre o jogo mais recente, mesmo dentro de timers e mensagens
 
   // Aceita um novo estado de jogo (de uma jogada, de uma partida nova ou vindo do anfitrião).
@@ -155,7 +157,11 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
   const receiveState = (next: GameState) => {
     const prev = gameRef.current
     if (JSON.stringify(prev) === JSON.stringify(next)) return
-    if (next.log.length <= prev.log.length) setShowResult(false)
+    if (next.log.length <= prev.log.length) {
+      // partida nova: limpa o resultado e o pedido de revanche
+      setShowResult(false)
+      setRematchSent(false)
+    }
     const isNewPlay = next.log.length === prev.log.length + 1
     commit(next, isNewPlay ? buildFx(prev, next) : null)
   }
@@ -176,6 +182,14 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
     if (role === 'guest') return
     commit(createGame(), null)
     setShowResult(false)
+    setRematchRequested(false)
+  }
+
+  // Convidado: pede ao anfitrião uma nova partida.
+  const requestRematch = () => {
+    if (role !== 'guest' || !gameRef.current.winner) return
+    online?.room.send({ type: 'rematch' })
+    setRematchSent(true)
   }
 
   const leave = () => {
@@ -213,6 +227,7 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
       onMessage: (message) => {
         if (online.role === 'host') {
           if (message.type === 'play') applyPlay(GUEST_TEAM, message.cardId)
+          if (message.type === 'rematch' && gameRef.current.winner) setRematchRequested(true)
           if (message.type === 'sync') {
             online.room.send({ type: 'state', state: maskState(gameRef.current, GUEST_TEAM) })
           }
@@ -257,7 +272,7 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
     <div className="app">
       <header className="top">
         <div>
-          <h1>Duelo das Cores</h1>
+          <h1>Guerra das Cartas</h1>
           <p className="subtitle">{subtitle}</p>
         </div>
         <div className="top-buttons">
@@ -265,7 +280,11 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
             Menu
           </button>
           {role !== 'guest' && (
-            <button type="button" className="btn" onClick={handleNewGame}>
+            <button
+              type="button"
+              className={`btn${rematchRequested ? ' btn-pulse' : ''}`}
+              onClick={handleNewGame}
+            >
               Nova partida
             </button>
           )}
@@ -306,6 +325,17 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
               Ver resultado
             </button>
           )}
+          {game.winner && role === 'host' && rematchRequested && (
+            <p className="rematch-note">Seu oponente pediu revanche! Clique em Nova partida.</p>
+          )}
+          {game.winner && role === 'guest' &&
+            (rematchSent ? (
+              <p className="rematch-note">Revanche pedida! Aguardando o anfitrião…</p>
+            ) : (
+              <button type="button" className="btn" onClick={requestRematch}>
+                Pedir revanche
+              </button>
+            ))}
         </section>
 
         <PlayerArea
@@ -328,6 +358,9 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
           humanTeam={solo ? myTeam : undefined}
           opponentName={mode === 'cpu' ? 'O computador' : 'Seu oponente'}
           onNewGame={role === 'guest' ? undefined : handleNewGame}
+          onRequestRematch={role === 'guest' ? requestRematch : undefined}
+          rematchSent={rematchSent}
+          rematchRequested={rematchRequested}
           onClose={() => setShowResult(false)}
         />
       )}

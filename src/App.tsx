@@ -19,7 +19,7 @@ function Menu({ onChoose }: { onChoose: (screen: Screen) => void }) {
   const play = (mode: Mode) => onChoose({ kind: 'game', mode, id: Date.now() })
   return (
     <div className="menu">
-      <h1>Duelo das Cores</h1>
+      <h1>Guerra das Cartas</h1>
       <p className="subtitle">Escolha como quer jogar</p>
       <div className="menu-buttons">
         <button type="button" className="btn btn-primary" onClick={() => play('cpu')}>

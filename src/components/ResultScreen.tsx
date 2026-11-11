@@ -5,7 +5,10 @@ import CardChip from './CardChip'
 
 interface ResultScreenProps {
   game: GameState
-  onNewGame?: () => void // sem isto (convidado online), aparece um aviso no lugar do botão
+  onNewGame?: () => void // anfitrião, computador e teste local
+  onRequestRematch?: () => void // convidado online: pedir revanche ao anfitrião
+  rematchSent?: boolean // convidado: o pedido já foi enviado
+  rematchRequested?: boolean // anfitrião: o oponente pediu revanche
   onClose: () => void
   humanTeam?: Team // quando há um "você": qual equipe é a sua
   opponentName?: string // ex.: "O computador" ou "Seu oponente"
@@ -25,6 +28,9 @@ const TEAMS: Team[] = ['black', 'red']
 export default function ResultScreen({
   game,
   onNewGame,
+  onRequestRematch,
+  rematchSent,
+  rematchRequested,
   onClose,
   humanTeam,
   opponentName,
@@ -84,11 +90,28 @@ export default function ResultScreen({
           ))}
         </div>
 
+        {rematchRequested && (
+          <p className="rematch-note">Seu oponente pediu revanche!</p>
+        )}
+
         <div className="result-actions">
           {onNewGame ? (
-            <button type="button" className="btn btn-primary" onClick={onNewGame} autoFocus>
+            <button
+              type="button"
+              className={`btn btn-primary${rematchRequested ? ' btn-pulse' : ''}`}
+              onClick={onNewGame}
+              autoFocus
+            >
               Nova partida
             </button>
+          ) : onRequestRematch ? (
+            rematchSent ? (
+              <p className="rematch-note">Revanche pedida! Aguardando o anfitrião…</p>
+            ) : (
+              <button type="button" className="btn btn-primary" onClick={onRequestRematch} autoFocus>
+                Pedir revanche
+              </button>
+            )
           ) : (
             <p className="play-text">Aguardando o anfitrião começar uma nova partida…</p>
           )}

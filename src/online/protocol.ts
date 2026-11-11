@@ -13,6 +13,7 @@ export type Message =
   | { type: 'state'; state: GameState } // anfitrião -> convidado: o jogo atual
   | { type: 'play'; cardId: string } // convidado -> anfitrião: quero jogar esta carta
   | { type: 'sync' } // convidado -> anfitrião: me mande o jogo atual de novo
+  | { type: 'rematch' } // convidado -> anfitrião: quero uma revanche
 
 const TEAMS: Team[] = ['black', 'red']
 
@@ -110,7 +111,7 @@ export function isGameState(x: unknown): x is GameState {
 
 export function isMessage(x: unknown): x is Message {
   if (!isRecord(x)) return false
-  if (x.type === 'sync') return true
+  if (x.type === 'sync' || x.type === 'rematch') return true
   if (x.type === 'play') return typeof x.cardId === 'string' && x.cardId.length <= 10
   if (x.type === 'state') return isGameState(x.state)
   return false
