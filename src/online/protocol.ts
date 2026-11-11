@@ -90,6 +90,7 @@ function isLogEntry(x: unknown): boolean {
     EFFECTS.includes(x.effect as string) &&
     typeof x.amount === 'number' &&
     (x.discarded === null || isCard(x.discarded)) &&
+    typeof x.extra === 'boolean' &&
     typeof x.text === 'string'
   )
 }

@@ -33,7 +33,12 @@ const FACE_POWER: Record<'J' | 'Q' | 'K', string> = {
 
 function CardCenter({ card }: { card: Card }) {
   if (card.rank === 'A') {
-    return <span className="center-suit">{card.suit}</span>
+    return (
+      <>
+        <span className="center-suit">{card.suit}</span>
+        <span className="ace-power">JOGUE DE NOVO</span>
+      </>
+    )
   }
 
   if (card.rank === 'J' || card.rank === 'Q' || card.rank === 'K') {

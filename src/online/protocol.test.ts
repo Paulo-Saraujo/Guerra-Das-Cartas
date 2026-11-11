@@ -71,6 +71,8 @@ describe('validação de mensagens', () => {
     expect(isMessage({ type: 'play', cardId: '7♠' })).toBe(true)
     expect(isMessage({ type: 'state', state: maskState(game, 'red') })).toBe(true)
     expect(isGameState(game)).toBe(true)
+    const played = playCard(game, (game.players.black.hand[0] as Card).id)
+    expect(isGameState(played)).toBe(true) // com uma jogada no histórico
   })
 
   it('rejeita mensagens estranhas', () => {

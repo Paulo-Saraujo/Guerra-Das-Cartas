@@ -117,13 +117,17 @@ export function playCard(state: GameState, cardId: string, rng: Rng = Math.rando
       result = `refletiram ${reflected} de dano (+${healed} de vida)`
     }
   } else {
-    // Carta numérica (Ás a 10): causa dano igual ao valor.
+    // Carta numérica (Ás a 10): causa dano igual ao valor. (O Ás ainda ganha uma jogada extra, mais abaixo.)
     amount = cardValue(card.rank)
     foe.life = Math.max(0, foe.life - amount)
     foe.lastDamage = amount
     effect = 'damage'
     result = `${amount} de dano nas ${foeName}`
   }
+
+  // Ás Veloz: depois de um Ás que não venceu a partida, quem jogou joga de novo.
+  const extra = card.rank === 'A' && foe.life > 0
+  if (extra) result += ' e jogam de novo'
 
   const entry: LogEntry = {
     turn: state.turn,
@@ -132,6 +136,7 @@ export function playCard(state: GameState, cardId: string, rng: Rng = Math.rando
     effect,
     amount,
     discarded,
+    extra,
     text: `${TEAM_NAME[team]} jogaram ${cardLabel(card)}: ${result}`,
   }
   next.log.push(entry)
@@ -142,6 +147,10 @@ export function playCard(state: GameState, cardId: string, rng: Rng = Math.rando
   }
 
   refillHand(me, rng)
+  if (extra) {
+    next.turn += 1 // a vez continua com quem jogou o Ás
+    return next
+  }
   next.current = otherTeam(team)
   next.turn += 1
   return next

@@ -34,6 +34,7 @@ export interface LogEntry {
   effect: EffectType
   amount: number // dano causado, vida curada ou dano refletido
   discarded: Card | null // carta que o adversário perdeu (Valete)
+  extra: boolean // Ás Veloz: quem jogou continua na vez (joga de novo)
   text: string // frase pronta para mostrar na tela
 }
 

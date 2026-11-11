@@ -91,6 +91,50 @@ describe('cartas numéricas', () => {
   })
 })
 
+describe('Ás Veloz', () => {
+  it('causa 1 de dano, repõe a mão e quem jogou continua na vez', () => {
+    const game = setup({ blackHand: [card('A'), card('2'), card('3'), card('4'), card('5')] })
+    const after = playCard(game, 'A♠', seeded(2))
+    expect(after.players.red.life).toBe(49)
+    expect(after.current).toBe('black')
+    expect(after.turn).toBe(2)
+    expect(after.players.black.hand).toHaveLength(5)
+    expect(after.log[0]?.extra).toBe(true)
+  })
+
+  it('a jogada seguinte passa a vez normalmente', () => {
+    const game = setup({ blackHand: [card('A'), card('2'), card('3'), card('4'), card('5')] })
+    const afterAce = playCard(game, 'A♠', seeded(2))
+    const next = afterAce.players.black.hand[0] as Card
+    const after = playCard(afterAce, next.id, seeded(2))
+    expect(after.current).toBe('red')
+    expect(after.log[1]?.extra).toBe(false)
+  })
+
+  it('dois Ases seguidos dão duas jogadas extras', () => {
+    const game = setup({ blackHand: [card('A', '♠'), card('A', '♣'), card('3'), card('4'), card('5')] })
+    const one = playCard(game, 'A♠', seeded(2))
+    const two = playCard(one, 'A♣', seeded(2))
+    expect(two.current).toBe('black')
+    expect(two.players.red.life).toBe(48)
+    expect(two.log[1]?.extra).toBe(true)
+  })
+
+  it('se o Ás vence a partida, não há jogada extra', () => {
+    const game = setup({ blackHand: [card('A'), card('2'), card('3'), card('4'), card('5')], redLife: 1 })
+    const after = playCard(game, 'A♠', seeded(2))
+    expect(after.winner).toBe('black')
+    expect(after.log[0]?.extra).toBe(false)
+    expect(after.turn).toBe(1)
+  })
+
+  it('o dano do Ás passa a ser o "último dano" do adversário (para o Rei dele)', () => {
+    const game = setup({ blackHand: [card('A'), card('2'), card('3'), card('4'), card('5')] })
+    game.players.red.lastDamage = 9
+    expect(playCard(game, 'A♠', seeded(2)).players.red.lastDamage).toBe(1)
+  })
+})
+
 describe('Dama', () => {
   it('cura 10 de vida', () => {
     const game = setup({ blackHand: [card('Q'), card('2'), card('3'), card('4'), card('5')], blackLife: 30 })

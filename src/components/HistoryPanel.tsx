@@ -22,6 +22,7 @@ export default function HistoryPanel({ log }: { log: LogEntry[] }) {
                 <CardChip card={entry.card} />
                 <span className="log-team">{TEAM_NAME[entry.team]}</span>
                 <span className={`log-effect effect-${effect.kind}`}>{effect.text}</span>
+                {effect.extra && <span className="log-extra">+1 jogada</span>}
                 {entry.discarded && <CardChip card={entry.discarded} />}
               </li>
             )

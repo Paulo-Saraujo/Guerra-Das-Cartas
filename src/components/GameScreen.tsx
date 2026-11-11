@@ -10,6 +10,7 @@ import CardView from './CardView'
 import Hearts from './Hearts'
 import HistoryPanel from './HistoryPanel'
 import ResultScreen from './ResultScreen'
+import RulesLegend from './RulesLegend'
 
 // cpu = contra o computador | local = teste com as duas mãos abertas | online = contra um amigo
 export type Mode = 'cpu' | 'local' | 'online'
@@ -21,7 +22,7 @@ const CPU_THINKING_MS = 1200
 
 // ---------- Efeitos visuais (números flutuantes, brilhos) ----------
 
-type PopupKind = 'damage' | 'heal' | 'discard'
+type PopupKind = 'damage' | 'heal' | 'discard' | 'extra'
 
 interface Popup {
   team: Team
@@ -54,6 +55,10 @@ function buildFx(prev: GameState, next: GameState): Fx | null {
   }
   if (entry.effect === 'discard' && entry.discarded) {
     popups.push({ team: foe, text: `-${cardLabel(entry.discarded)}`, kind: 'discard' })
+  }
+
+  if (entry.extra) {
+    popups.push({ team: entry.team, text: '+1 JOGADA', kind: 'extra' })
   }
 
   return { id: entry.turn, popups }
@@ -122,9 +127,10 @@ interface GameScreenProps {
   mode: Mode
   online?: OnlineSession
   onExit: () => void
+  onHelp: () => void // abre o tutorial
 }
 
-export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
+export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenProps) {
   const role = online?.role
   const myTeam: Team = role === 'guest' ? GUEST_TEAM : HOST_TEAM // sempre fica embaixo da tela
   const foeTeam = otherTeam(myTeam)
@@ -247,6 +253,7 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
 
   const last = game.log[game.log.length - 1]
   const badge = last ? describeEffect(last) : null
+  const again = Boolean(last?.extra) && !game.winner // Ás Veloz: a mesma pessoa joga de novo
 
   let status: string
   if (game.winner) {
@@ -261,12 +268,20 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
     status = `Turno ${game.turn} · vez das ${TEAM_NAME[game.current]}`
   }
 
+  if (again) status += ' · +1 jogada'
+
   let subtitle: string
   if (mode === 'cpu') subtitle = 'Você joga de Pretas contra o computador.'
   else if (mode === 'online') subtitle = `Partida online · Sala ${online?.room.code ?? ''} · você joga de ${TEAM_NAME[myTeam]}`
   else subtitle = 'Teste local: as duas mãos aparecem abertas para conferirmos as regras.'
 
-  const foeBadge = mode === 'cpu' ? 'Pensando…' : mode === 'online' ? 'Vez do oponente' : 'Jogando agora'
+  const foeBadge = again
+    ? 'Joga de novo!'
+    : mode === 'cpu'
+      ? 'Pensando…'
+      : mode === 'online'
+        ? 'Vez do oponente'
+        : 'Jogando agora'
 
   return (
     <div className="app">
@@ -276,6 +291,9 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
           <p className="subtitle">{subtitle}</p>
         </div>
         <div className="top-buttons">
+          <button type="button" className="btn" onClick={onHelp}>
+            Como jogar
+          </button>
           <button type="button" className="btn" onClick={handleMenu}>
             Menu
           </button>
@@ -310,7 +328,10 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
               <div className={`play-card from-${last.team === myTeam ? 'bottom' : 'top'}`}>
                 <CardView card={last.card} />
               </div>
-              <div className={`badge badge-${badge.kind}`}>{badge.text}</div>
+              <div className={`badge badge-${badge.kind}`}>
+                {badge.text}
+                {badge.extra && <span className="badge-extra">+1 JOGADA</span>}
+              </div>
             </div>
           ) : (
             <p className="play-text">
@@ -341,7 +362,7 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
         <PlayerArea
           team={myTeam}
           label={solo ? `${TEAM_NAME[myTeam]} (você)` : TEAM_NAME[myTeam]}
-          badge={solo ? 'Sua vez' : 'Jogando agora'}
+          badge={again ? 'Jogue de novo!' : solo ? 'Sua vez' : 'Jogando agora'}
           game={game}
           fx={fx}
           interactive
@@ -350,7 +371,10 @@ export default function GameScreen({ mode, online, onExit }: GameScreenProps) {
         />
       </main>
 
-      <HistoryPanel log={game.log} />
+      <div className="side">
+        <RulesLegend />
+        <HistoryPanel log={game.log} />
+      </div>
 
       {game.winner && showResult && !disconnected && (
         <ResultScreen

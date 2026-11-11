@@ -34,11 +34,21 @@ describe('computador', () => {
   })
 
   it('usa o Rei quando há muito dano para refletir', () => {
-    const state = redTurn([card('K'), card('3', '♦'), card('2'), card('4', '♦'), card('A')], {
+    const state = redTurn([card('K'), card('3', '♦'), card('2'), card('4', '♦'), card('5')], {
       redLife: 40,
       redLastDamage: 10,
     })
     expect(chooseCard(state, 'red', seeded(5))).toBe('K♥')
+  })
+
+  it('joga o Ás primeiro, porque depois dele joga-se de novo', () => {
+    const state = redTurn([card('A'), card('9', '♦'), card('Q'), card('8'), card('2', '♦')])
+    expect(chooseCard(state, 'red', seeded(5))).toBe('A♥')
+  })
+
+  it('mas a carta que vence a partida vem antes do Ás', () => {
+    const state = redTurn([card('A'), card('9', '♦'), card('3'), card('8'), card('2', '♦')], { blackLife: 9 })
+    expect(chooseCard(state, 'red', seeded(5))).toBe('9♦')
   })
 
   it('não gasta o Rei quando não há dano para refletir', () => {

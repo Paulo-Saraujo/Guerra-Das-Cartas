@@ -31,7 +31,10 @@ function scoreCard(card: Card, state: GameState, team: Team): number {
     default: {
       // Carta numérica: se mata o adversário, joga na hora; senão, quanto mais dano, melhor.
       const damage = cardValue(card.rank)
-      return damage >= foe.life ? 1000 : damage
+      if (damage >= foe.life) return 1000
+      // Ás Veloz: é uma jogada "de graça" (depois dele joga-se de novo), então vai antes das outras.
+      if (card.rank === 'A') return 500
+      return damage
     }
   }
 }
