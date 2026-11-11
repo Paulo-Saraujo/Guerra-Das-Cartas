@@ -211,11 +211,11 @@
   gap: 22px;
 }
 
-.play-card.from-black {
+.play-card.from-bottom {
   animation: slide-from-bottom 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
-.play-card.from-red {
+.play-card.from-top {
   animation: slide-from-top 0.45s cubic-bezier(0.2, 0.8, 0.3, 1) both;
 }
 
@@ -700,6 +700,49 @@
 .top-buttons {
   display: flex;
   gap: 8px;
+}
+
+/* ---------- Sala online ---------- */
+.code-box {
+  justify-self: center;
+  padding: 10px 22px;
+  background: #1d212b;
+  border: 2px dashed #f5c542;
+  border-radius: 12px;
+  color: #f5c542;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: 0.3em;
+  text-indent: 0.3em;
+}
+
+.code-input,
+.link-input {
+  justify-self: center;
+  padding: 10px 14px;
+  background: #12151b;
+  border: 2px solid #3b4358;
+  border-radius: 8px;
+  color: #f2f2f5;
+}
+
+.code-input {
+  width: 240px;
+  font-size: 1.8rem;
+  letter-spacing: 0.25em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.link-input {
+  width: min(460px, 100%);
+  font-size: 0.85rem;
+}
+
+.notice-error {
+  max-width: 460px;
+  justify-self: center;
+  color: #ff8a8a;
 }
 
 /* ---------- Animações ---------- */

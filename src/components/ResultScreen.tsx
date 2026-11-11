@@ -5,9 +5,10 @@ import CardChip from './CardChip'
 
 interface ResultScreenProps {
   game: GameState
-  onNewGame: () => void
+  onNewGame?: () => void // sem isto (convidado online), aparece um aviso no lugar do botão
   onClose: () => void
-  humanTeam?: Team // no modo contra o computador: qual equipe é a do jogador
+  humanTeam?: Team // quando há um "você": qual equipe é a sua
+  opponentName?: string // ex.: "O computador" ou "Seu oponente"
 }
 
 // Estatísticas de uma equipe, calculadas a partir do histórico.
@@ -21,14 +22,20 @@ function teamStats(game: GameState, team: Team) {
 
 const TEAMS: Team[] = ['black', 'red']
 
-export default function ResultScreen({ game, onNewGame, onClose, humanTeam }: ResultScreenProps) {
+export default function ResultScreen({
+  game,
+  onNewGame,
+  onClose,
+  humanTeam,
+  opponentName,
+}: ResultScreenProps) {
   const winner = game.winner
   if (!winner) return null
 
   const title = humanTeam
     ? winner === humanTeam
       ? '♛ Você venceu!'
-      : 'O computador venceu!'
+      : `${opponentName ?? 'O computador'} venceu!`
     : `♛ ${TEAM_NAME[winner]} venceram!`
 
   return (
@@ -78,9 +85,13 @@ export default function ResultScreen({ game, onNewGame, onClose, humanTeam }: Re
         </div>
 
         <div className="result-actions">
-          <button type="button" className="btn btn-primary" onClick={onNewGame} autoFocus>
-            Nova partida
-          </button>
+          {onNewGame ? (
+            <button type="button" className="btn btn-primary" onClick={onNewGame} autoFocus>
+              Nova partida
+            </button>
+          ) : (
+            <p className="play-text">Aguardando o anfitrião começar uma nova partida…</p>
+          )}
           <button type="button" className="btn" onClick={onClose}>
             Ver a mesa
           </button>
