@@ -68,6 +68,18 @@ function isCardList(x: unknown): x is Card[] {
   return Array.isArray(x) && x.length <= 60 && x.every(isCard)
 }
 
+function isScore(x: unknown): boolean {
+  return (
+    isRecord(x) &&
+    Number.isInteger(x.black) &&
+    Number.isInteger(x.red) &&
+    (x.black as number) >= 0 &&
+    (x.red as number) >= 0 &&
+    (x.black as number) < 100000 &&
+    (x.red as number) < 100000
+  )
+}
+
 function isPlayer(x: unknown): boolean {
   return (
     isRecord(x) &&
@@ -104,6 +116,7 @@ export function isGameState(x: unknown): x is GameState {
     TEAMS.includes(x.current as Team) &&
     typeof x.turn === 'number' &&
     (x.winner === null || TEAMS.includes(x.winner as Team)) &&
+    isScore(x.score) &&
     Array.isArray(x.log) &&
     x.log.length <= 500 &&
     x.log.every(isLogEntry)

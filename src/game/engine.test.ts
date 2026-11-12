@@ -1,6 +1,6 @@
 // Testes automáticos das regras. Rodam com: npx vitest run
 import { describe, it, expect } from 'vitest'
-import { createGame, playCard } from './engine'
+import { createGame, nextGame, playCard, resetScore } from './engine'
 import { createDeck, shuffle, cardStrength } from './deck'
 import type { Card, GameState, Rank, Suit, Team } from './types'
 
@@ -229,6 +229,61 @@ describe('compra e reembaralhamento', () => {
     expect(after.players.black.hand).toHaveLength(5)
     // descarte (3) + a carta recém-jogada (1) foram embaralhados; 1 foi comprada, sobram 3
     expect(after.players.black.deck.length + after.players.black.discard.length).toBe(3)
+  })
+})
+
+describe('placar', () => {
+  const wonByBlack = () => {
+    const game = setup({ blackHand: [card('7'), card('2'), card('3'), card('4'), card('5')], redLife: 5 })
+    return playCard(game, '7♠', seeded(2))
+  }
+
+  it('começa zerado', () => {
+    expect(createGame('black', seeded(1)).score).toEqual({ black: 0, red: 0 })
+  })
+
+  it('quem vence ganha 1 ponto, e jogadas comuns não mudam o placar', () => {
+    const game = setup({ blackHand: [card('7'), card('2'), card('3'), card('4'), card('5')] })
+    expect(playCard(game, '7♠', seeded(2)).score).toEqual({ black: 0, red: 0 })
+    expect(wonByBlack().score).toEqual({ black: 1, red: 0 })
+  })
+
+  it('depois da vitória, nada soma de novo', () => {
+    const won = wonByBlack()
+    expect(playCard(won, '2♠', seeded(2))).toBe(won)
+    expect(won.score.black).toBe(1)
+  })
+
+  it('a partida seguinte começa limpa, mas guarda o placar', () => {
+    const next = nextGame(wonByBlack(), seeded(4))
+    expect(next.score).toEqual({ black: 1, red: 0 })
+    expect(next.winner).toBeNull()
+    expect(next.log).toHaveLength(0)
+    expect(next.turn).toBe(1)
+    expect(next.players.black.life).toBe(50)
+    expect(next.players.red.life).toBe(50)
+  })
+
+  it('zerar o placar não altera o jogo original', () => {
+    const won = wonByBlack()
+    expect(resetScore(won).score).toEqual({ black: 0, red: 0 })
+    expect(won.score.black).toBe(1)
+  })
+
+  it('uma série de 50 partidas soma exatamente 50 pontos', () => {
+    const rng = seeded(11)
+    let game = createGame(undefined, rng)
+    for (let round = 1; round <= 50; round++) {
+      let safety = 0
+      while (!game.winner && safety < 3000) {
+        const hand = game.players[game.current].hand
+        game = playCard(game, (hand[Math.floor(rng() * hand.length)] as Card).id, rng)
+        safety++
+      }
+      expect(game.winner).not.toBeNull()
+      expect(game.score.black + game.score.red).toBe(round)
+      if (round < 50) game = nextGame(game, rng)
+    }
   })
 })
 

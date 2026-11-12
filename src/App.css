@@ -923,6 +923,85 @@
   background: #f5c542;
 }
 
+/* ---------- Placar ---------- */
+.scoreboard {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 16px;
+  padding: 10px 14px;
+  background: #171a21;
+  border: 2px solid #2a2f3a;
+  border-radius: 14px;
+}
+
+.score-side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-name {
+  font-weight: 700;
+}
+
+.score-name::before {
+  content: '♥ ';
+}
+
+.score-red .score-name::before {
+  color: #ef4444;
+}
+
+.score-black .score-name::before {
+  color: #0b0b0f;
+  text-shadow: 0 0 1px #fff, 0 0 3px #fff;
+}
+
+.score-num {
+  display: inline-block;
+  min-width: 2.4ch;
+  padding: 0 10px;
+  background: #1d212b;
+  border: 2px solid #2a2f3a;
+  border-radius: 8px;
+  font-size: 2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  animation: life-pop 0.35s ease-out;
+}
+
+.score-side.leading .score-num {
+  color: #f5c542;
+  border-color: #f5c542;
+}
+
+.score-x {
+  color: #8a93a3;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.score-reset {
+  background: none;
+  border: none;
+  color: #8a93a3;
+  font-size: 0.8rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.score-reset:hover {
+  color: #f2f2f5;
+}
+
+.result-wins {
+  color: #f5c542;
+  font-weight: 700;
+}
+
 /* ---------- Animações ---------- */
 @keyframes deal-in {
   from {

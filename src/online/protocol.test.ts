@@ -70,6 +70,7 @@ describe('validação de mensagens', () => {
     expect(isMessage({ type: 'rematch' })).toBe(true)
     expect(isMessage({ type: 'play', cardId: '7♠' })).toBe(true)
     expect(isMessage({ type: 'state', state: maskState(game, 'red') })).toBe(true)
+    expect(maskState(game, 'red').score).toEqual({ black: 0, red: 0 })
     expect(isGameState(game)).toBe(true)
     const played = playCard(game, (game.players.black.hand[0] as Card).id)
     expect(isGameState(played)).toBe(true) // com uma jogada no histórico
@@ -85,6 +86,11 @@ describe('validação de mensagens', () => {
     const broken = createGame('black', seeded(2)) as unknown as { players: { red: { life: unknown } } }
     broken.players.red.life = 'muita'
     expect(isMessage({ type: 'state', state: broken })).toBe(false)
+    const badScore = createGame('black', seeded(2)) as unknown as { score: unknown }
+    badScore.score = { black: 'muitos', red: 0 }
+    expect(isMessage({ type: 'state', state: badScore })).toBe(false)
+    badScore.score = { black: -3, red: 0 }
+    expect(isMessage({ type: 'state', state: badScore })).toBe(false)
   })
 })
 

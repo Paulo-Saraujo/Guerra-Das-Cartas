@@ -43,5 +43,6 @@ export interface GameState {
   current: Team // de quem é a vez
   turn: number // número do turno atual (começa em 1)
   winner: Team | null
+  score: Record<Team, number> // vitórias de cada lado na série de partidas
   log: LogEntry[]
 }

@@ -66,6 +66,9 @@ export default function ResultScreen({
                 </p>
                 <p>{stats.cards} cartas jogadas</p>
                 <p>{stats.damage} de dano causado</p>
+                <p className="result-wins">
+                  {game.score[team]} {game.score[team] === 1 ? 'vitória' : 'vitórias'} no placar
+                </p>
               </div>
             )
           })}

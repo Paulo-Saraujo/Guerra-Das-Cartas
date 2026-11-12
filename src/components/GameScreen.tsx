@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { createGame } from '../game/engine'
+import { createGame, nextGame, resetScore } from '../game/engine'
 import { chooseCard } from '../game/ai'
 import { MAX_LIFE, TEAM_NAME, cardLabel, otherTeam } from '../game/deck'
 import { describeEffect } from '../game/format'
@@ -163,7 +163,7 @@ export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenP
   const receiveState = (next: GameState) => {
     const prev = gameRef.current
     if (JSON.stringify(prev) === JSON.stringify(next)) return
-    if (next.log.length <= prev.log.length) {
+    if (next.log.length < prev.log.length) {
       // partida nova: limpa o resultado e o pedido de revanche
       setShowResult(false)
       setRematchSent(false)
@@ -186,9 +186,15 @@ export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenP
 
   const handleNewGame = () => {
     if (role === 'guest') return
-    commit(createGame(), null)
+    commit(nextGame(gameRef.current), null) // partida nova, mas o placar continua
     setShowResult(false)
     setRematchRequested(false)
+  }
+
+  const handleResetScore = () => {
+    if (role === 'guest') return
+    if (!window.confirm('Zerar o placar?')) return
+    commit(resetScore(gameRef.current), fx)
   }
 
   // Convidado: pede ao anfitrião uma nova partida.
@@ -275,6 +281,12 @@ export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenP
   else if (mode === 'online') subtitle = `Partida online · Sala ${online?.room.code ?? ''} · você joga de ${TEAM_NAME[myTeam]}`
   else subtitle = 'Teste local: as duas mãos aparecem abertas para conferirmos as regras.'
 
+  const scoreName = (team: Team) =>
+    !solo ? TEAM_NAME[team] : team === myTeam ? 'Você' : mode === 'cpu' ? 'Computador' : 'Oponente'
+  const myWins = game.score[myTeam]
+  const foeWins = game.score[foeTeam]
+  const totalWins = myWins + foeWins
+
   const foeBadge = again
     ? 'Joga de novo!'
     : mode === 'cpu'
@@ -310,6 +322,29 @@ export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenP
       </header>
 
       <main className="board">
+        <section className="scoreboard" aria-label="Placar">
+          <div className={`score-side score-${myTeam}${myWins > foeWins ? ' leading' : ''}`}>
+            <span className="score-name">{scoreName(myTeam)}</span>
+            <span key={myWins} className="score-num">
+              {myWins}
+            </span>
+          </div>
+          <span className="score-x" aria-hidden="true">
+            ×
+          </span>
+          <div className={`score-side score-${foeTeam}${foeWins > myWins ? ' leading' : ''}`}>
+            <span key={foeWins} className="score-num">
+              {foeWins}
+            </span>
+            <span className="score-name">{scoreName(foeTeam)}</span>
+          </div>
+          {role !== 'guest' && totalWins > 0 && (
+            <button type="button" className="score-reset" onClick={handleResetScore}>
+              Zerar placar
+            </button>
+          )}
+        </section>
+
         <PlayerArea
           team={foeTeam}
           label={solo ? `${TEAM_NAME[foeTeam]} (${foeWord})` : TEAM_NAME[foeTeam]}

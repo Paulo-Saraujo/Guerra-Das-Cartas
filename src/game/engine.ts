@@ -54,8 +54,21 @@ export function createGame(startingTeam?: Team, rng: Rng = Math.random): GameSta
     current: first,
     turn: 1,
     winner: null,
+    score: { black: 0, red: 0 },
     log: [],
   }
+}
+
+// Começa a partida seguinte da série: cartas e vida novas, mas o placar continua.
+export function nextGame(previous: GameState, rng: Rng = Math.random): GameState {
+  const game = createGame(undefined, rng)
+  game.score = { ...previous.score }
+  return game
+}
+
+// Devolve o mesmo jogo com o placar zerado.
+export function resetScore(state: GameState): GameState {
+  return { ...state, score: { black: 0, red: 0 } }
 }
 
 // Joga uma carta da mão de quem está na vez e devolve o NOVO estado do jogo.
@@ -143,6 +156,7 @@ export function playCard(state: GameState, cardId: string, rng: Rng = Math.rando
 
   if (foe.life <= 0) {
     next.winner = team // a partida acaba; o contador de turnos fica no último turno jogado
+    next.score[team] += 1 // ponto no placar para quem venceu
     return next
   }
 
