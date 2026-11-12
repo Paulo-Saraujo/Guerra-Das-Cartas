@@ -278,7 +278,10 @@ export default function GameScreen({ mode, online, onExit, onHelp }: GameScreenP
 
   let subtitle: string
   if (mode === 'cpu') subtitle = 'Você joga de Pretas contra o computador.'
-  else if (mode === 'online') subtitle = `Partida online · Sala ${online?.room.code ?? ''} · você joga de ${TEAM_NAME[myTeam]}`
+  else if (mode === 'online' && online?.kind === 'match')
+    subtitle = `Partida online contra um desconhecido · você joga de ${TEAM_NAME[myTeam]}`
+  else if (mode === 'online')
+    subtitle = `Partida online · Sala ${online?.room.code ?? ''} · você joga de ${TEAM_NAME[myTeam]}`
   else subtitle = 'Teste local: as duas mãos aparecem abertas para conferirmos as regras.'
 
   const scoreName = (team: Team) =>

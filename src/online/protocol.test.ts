@@ -68,6 +68,7 @@ describe('validação de mensagens', () => {
     const game = createGame('black', seeded(2))
     expect(isMessage({ type: 'sync' })).toBe(true)
     expect(isMessage({ type: 'rematch' })).toBe(true)
+    expect(isMessage({ type: 'match', code: 'K7M2P' })).toBe(true)
     expect(isMessage({ type: 'play', cardId: '7♠' })).toBe(true)
     expect(isMessage({ type: 'state', state: maskState(game, 'red') })).toBe(true)
     expect(maskState(game, 'red').score).toEqual({ black: 0, red: 0 })
@@ -83,6 +84,9 @@ describe('validação de mensagens', () => {
     expect(isMessage({ type: 'play', cardId: 123 })).toBe(false)
     expect(isMessage({ type: 'state', state: {} })).toBe(false)
     expect(isMessage({ type: 'hack' })).toBe(false)
+    expect(isMessage({ type: 'match' })).toBe(false)
+    expect(isMessage({ type: 'match', code: 'abc' })).toBe(false)
+    expect(isMessage({ type: 'match', code: 'IO10Z' })).toBe(false)
     const broken = createGame('black', seeded(2)) as unknown as { players: { red: { life: unknown } } }
     broken.players.red.life = 'muita'
     expect(isMessage({ type: 'state', state: broken })).toBe(false)

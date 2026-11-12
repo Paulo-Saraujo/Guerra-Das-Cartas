@@ -3,12 +3,14 @@ import './App.css'
 import GameScreen from './components/GameScreen'
 import type { Mode } from './components/GameScreen'
 import Lobby from './components/Lobby'
+import Matchmaking from './components/Matchmaking'
 import Tutorial from './components/Tutorial'
 import type { OnlineSession } from './online/room'
 
 type Screen =
   | { kind: 'menu' }
-  | { kind: 'lobby' }
+  | { kind: 'lobby' } // online contra amigos (com código)
+  | { kind: 'match' } // online contra estranhos (busca automática)
   | { kind: 'game'; mode: Mode; online?: OnlineSession; id: number }
 
 // Link de convite: https://.../?sala=ABCDE  ->  abre direto na tela de entrar na sala.
@@ -51,7 +53,10 @@ function Menu({ onChoose, onHelp }: MenuProps) {
           Jogador contra computador
         </button>
         <button type="button" className="btn" onClick={() => onChoose({ kind: 'lobby' })}>
-          Jogador contra jogador online
+          Online · contra amigos (com código)
+        </button>
+        <button type="button" className="btn" onClick={() => onChoose({ kind: 'match' })}>
+          Online · contra estranhos (busca automática)
         </button>
         <button type="button" className="btn" onClick={() => play('local')}>
           Teste local (as duas mãos abertas)
@@ -82,6 +87,14 @@ function App() {
       return (
         <Lobby
           initialCode={inviteCode}
+          onBack={() => setScreen({ kind: 'menu' })}
+          onReady={(online) => setScreen({ kind: 'game', mode: 'online', online, id: Date.now() })}
+        />
+      )
+    }
+    if (screen.kind === 'match') {
+      return (
+        <Matchmaking
           onBack={() => setScreen({ kind: 'menu' })}
           onReady={(online) => setScreen({ kind: 'game', mode: 'online', online, id: Date.now() })}
         />

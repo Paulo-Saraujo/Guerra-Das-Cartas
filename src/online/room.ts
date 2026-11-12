@@ -31,6 +31,7 @@ export interface OnlineSession {
   role: 'host' | 'guest'
   room: Room
   initialState?: GameState // o convidado já recebe o jogo inicial
+  kind?: 'friends' | 'match' // sala de amigos (com código) ou partida encontrada pela busca
 }
 
 // Deixa só letras e números permitidos, em maiúsculas, até 5 caracteres.
@@ -48,7 +49,7 @@ function makeCode(): string {
   return Array.from(bytes, (b) => CODE_CHARS.charAt(b % CODE_CHARS.length)).join('')
 }
 
-function describeError(type: string): string {
+export function describeError(type: string): string {
   switch (type) {
     case 'network':
     case 'server-error':
@@ -153,16 +154,16 @@ export function joinRoom(rawCode: string, callbacks: GuestCallbacks): Room {
   let conn: DataConnection | null = null
   let closedByUs = false
   let connected = false
-  let timeout: number | undefined
+  let timeout: ReturnType<typeof setTimeout> | undefined
 
   const peer = new Peer()
 
   const fail = (text: string) => {
-    window.clearTimeout(timeout)
+    clearTimeout(timeout)
     callbacks.onFail(text)
   }
 
-  timeout = window.setTimeout(() => {
+  timeout = setTimeout(() => {
     if (!connected) {
       fail('Não foi possível conectar a tempo. Confira o código e se o seu amigo continua com a sala aberta.')
     }
@@ -173,7 +174,7 @@ export function joinRoom(rawCode: string, callbacks: GuestCallbacks): Room {
     conn = c
     c.on('open', () => {
       connected = true
-      window.clearTimeout(timeout)
+      clearTimeout(timeout)
       callbacks.onConnected()
     })
     c.on('data', (data) => {
@@ -207,7 +208,7 @@ export function joinRoom(rawCode: string, callbacks: GuestCallbacks): Room {
     },
     close: () => {
       closedByUs = true
-      window.clearTimeout(timeout)
+      clearTimeout(timeout)
       conn?.close()
       peer.destroy()
     },

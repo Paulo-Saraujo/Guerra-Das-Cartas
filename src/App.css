@@ -1002,6 +1002,14 @@
   font-weight: 700;
 }
 
+/* ---------- Busca de oponentes ---------- */
+.menu-note {
+  max-width: 460px;
+  justify-self: center;
+  color: #8a93a3;
+  font-size: 0.9rem;
+}
+
 /* ---------- Animações ---------- */
 @keyframes deal-in {
   from {
