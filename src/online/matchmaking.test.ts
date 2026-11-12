@@ -8,7 +8,7 @@ vi.mock('peerjs', async () => {
 })
 
 import { findMatch } from './matchmaking'
-import type { MatchSearch } from './matchmaking'
+import type { MatchOptions, MatchSearch } from './matchmaking'
 import { addGhost, resetFakeNetwork } from './fakePeer'
 import { createGame } from '../game/engine'
 import type { OnlineSession } from './room'
@@ -27,7 +27,7 @@ const NOTHING = 'nada aconteceu'
 const pause = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms))
 
 // Um jogador procurando partida.
-function seek(options: Partial<typeof FAST> = {}) {
+function seek(options: Partial<MatchOptions> = {}) {
   let resolveSession!: (session: OnlineSession) => void
   let resolveFailure!: (text: string) => void
   const session = new Promise<OnlineSession>((resolve) => (resolveSession = resolve))
@@ -47,7 +47,7 @@ function seek(options: Partial<typeof FAST> = {}) {
 }
 
 // Espera uma promessa por um tempo; devolve NOTHING se ela não terminar.
-async function within<T>(promise: Promise<T>, ms: number): Promise<T | typeof NOTHING> {
+async function within(promise: Promise<unknown>, ms: number): Promise<unknown> {
   return Promise.race([promise, pause(ms).then(() => NOTHING)])
 }
 
